@@ -1,0 +1,507 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baltimore Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        #sidebar {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            padding-top: 45px;
+            transition: width 0.3s;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        #sidebar button {
+            width: 100%;
+            padding: 10px 8px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: flex;
+            align-items: center;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            transition-delay: 10s;
+            justify-content: space-between;
+            padding-right: 29px;
+        }
+
+        #sidebar button e, #sidebar e {
+            text-align: center;
+            width: 40px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #sidebar button span {
+            display: flex;
+            transition-delay: 10s;
+            transition: opacity 0.3s;
+        }
+
+        #sidebar button:hover {
+            background-color: #575757;
+        }
+
+        #toggle {
+            display: none;
+        }
+
+        /* Collapsed sidebar styles */
+        #toggle:checked ~ #sidebar {
+            width: 60px;
+        }
+
+        #toggle:checked ~ #sidebar button e, #toggle:checked ~ #sidebar e {
+            width: 0px;
+            justify-content: center;
+            align-items: center;
+            display: flex;
+            padding-left: 20px;
+        }
+
+        /* Hide text when sidebar is collapsed */
+        #toggle:checked ~ #sidebar button span {
+            display: none;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        #toggle:checked ~ .map-container {
+            /*margin-left: 60px; /* Adjust content margin when sidebar is collapsed */
+            width: calc(100% - 60px);
+            margin-left: auto; 
+            margin-right: 0;
+        }
+
+        /* Adjust sidebar icon positioning */
+        /*#sidebar a, #sidebar button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 10px;
+        }*/
+
+        #toggleButton {
+            position: fixed;
+            top: 5px;
+            left: 200px;
+            background-color: rgba(0, 0, 0, 0);
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            z-index: 3;
+            transition: left 0.3s;
+            font-size: 13px;
+        }
+
+        #toggle:checked + #toggleButton {
+            left: 12px;
+        }
+
+        /* Container for the map */
+        .map-container {
+            width: calc(100% - 250px);
+            height: 100svh;
+            margin-left: auto;
+            transition: width 0.3s;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        #buttonContainer, #viewsButtonContainer {
+            display: none;
+            gap: 10px;
+            margin-bottom: 10px;
+            margin-left: 50px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 3px;
+            font-size: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0);
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        /* Rounded sub-buttons */
+        #buttonContainer b button, #viewsButtonContainer b button {
+            background-color: rgba(0, 0, 0, 0);
+            border-radius: 12px; /* Add rounded corners to the sub-buttons */
+            padding: 5px 10px;
+            font-size: 14px;
+            transition: background-color 0.3s, border-radius 0.3s;
+        }
+
+        /* Sub-button hover effects */
+        #buttonContainer b button:hover, #viewsButtonContainer b button:hover {
+            background-color: rgba(0, 0, 0, 0);
+            font-weight: bold;
+        }
+
+        .toggleicon {
+            margin-left: auto; /* Pushes the icon to the right end */
+            font-size: 18px; /* Adjust the size of the "+" and "-" icon */
+        }
+
+        /* Back button styles */
+        #backButton {
+            position: fixed;
+            top: 45px;
+            left: 265px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 12px;
+            color: black;
+            border: black;
+            cursor: pointer;
+            z-index: 4;
+            display: none;
+            transition: left 0.3s;
+            font-size: 18px;
+        }
+
+        #backButton:hover {
+            font-weight: bold;
+        }
+
+        #toggle:checked ~ #backButton {
+            left: 70px; /* Shift when the sidebar collapses */
+        }
+
+        /* Move About button to the bottom of the sidebar and center it */
+        #aboutContainer {
+            position: absolute;
+            bottom: 45px;
+            width: 100%;
+            text-align: center;
+            background-color: #111;
+            transition: transform 0.5s ease; /* Smooth slide-up effect */
+            transform: translateY(0); /* Initial position */
+        }
+
+        /* When active, slide up the container */
+        #aboutContainer.active {
+            transform: translateY(-285px); /* Adjust to fit the text */
+        }
+
+        /* About button */
+        #showAboutButton {
+            padding: 0px;
+            cursor: pointer;
+            display: block;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* About text, initially off-screen */
+        #aboutText {
+            color: white;
+            position: absolute;
+            padding-left: 15px;
+            padding-right: 15px;
+            font-size: 14px;
+            opacity: 0;
+            visibility: hidden;
+            -webkit-transition: opacity 600ms, visibility 600ms;
+            transition: opacity 600ms, visibility 600ms;
+            bottom: -275px;
+
+        }
+
+        #aboutContainer.active #aboutText {
+            opacity: 100;
+            visibility: visible;
+        }
+
+        #toggle:checked ~ #sidebar p {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #socialLinks {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 50px;
+        }
+
+        .social-icon {
+            width: 32px;
+            height: 32px;
+            transition: transform 0.2s;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <input type="checkbox" id="toggle">
+    <label for="toggle" id="toggleButton">☰</label>
+
+    <div id="sidebar">
+        <!--🛢️🛢🗺️-->
+        <!-- Data button with sub-buttons -->
+        <button id="showButton">
+            <e>🛢️</e><span>Data</span><span id="dataToggleIcon" class="toggleicon">+</span>
+        </button>
+        <div id="buttonContainer">
+            <b><button id="ticketsButton">Tickets</button></b>
+            <b><button id="towingsButton">Towings</button></b>
+        </div>
+
+        <!-- Views button with sub-buttons -->
+        <button id="showViewsButton">
+            <e>🗺️</e><span>Views</span><span id="viewsToggleIcon" class="toggleicon">+</span>
+        </button>
+        <div id="viewsButtonContainer">
+            <b><button id="heatmapButton">Heat</button></b>
+            <b><button id="roadmapButton">Road</button></b>
+            <b><button id="plotmapButton">Plot</button></b>
+        </div>
+
+        <button id="showExtrasButton">
+            <e>📈</e><span>Extras</span><span class="toggleicon"> </span>
+        </button>
+
+        <div id="aboutContainer">
+            <button id="showAboutButton">
+                <e>ℹ️</e><span>About</span><span id="aboutToggleIcon" class="toggleicon">∧</span>
+            </button>
+            <div id="aboutText">
+                <p>This site analyzes 2024 Baltimore City parking ticket and towing data in various views and graphs.</p>
+                <p>Data filtered to only relevant causes (excludes towing/ticketing reasons such as police work, aboandoned/disabled vehicles, etc.).</p>
+                <p>Source Data: <a href="https://data.baltimorecity.gov/">Open Baltimore</a></p>
+                <!-- <p><a href="https://www.linkedin.com/in/stephen-watkins-48233a148/"><img src="images/icons8-linkedin-64.png"></a></p> -->
+                <div id="socialLinks">
+                    <a href="https://www.linkedin.com/in/stephen-watkins-48233a148/" target="_blank" title="LinkedIn">
+                        <img src="{% static 'icons8-linkedin-64.png' %}" class="social-icon">
+                    </a>
+                    <a href="https://github.com/stephenw02/Baltimore_Parking/tree/main" target="_blank" title="GitHub">
+                        <img src="{% static 'icons8-github-64.png' %}" alt="GitHub" class="social-icon">
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Back button -->
+    <button id="backButton">Back</button>
+
+    <div class="map-container" id="mapContainer">
+        <iframe id="mapFrame" src="/maps/tickets_plotmap/" frameborder="0"></iframe>
+    </div>
+
+    <script>
+        // Data button functionality
+        const showButton = document.getElementById("showButton");
+        const buttonContainer = document.getElementById("buttonContainer");
+        const toggleCheckbox = document.getElementById("toggle");
+        const datatoggleicon = document.getElementById("dataToggleIcon");
+
+        // Toggle the sub-buttons for "Data"
+        showButton.addEventListener("click", function() {
+            expandSidebarIfCollapsed();
+            buttonContainer.style.display = buttonContainer.style.display === "flex" ? "none" : "flex";
+            datatoggleicon.textContent = buttonContainer.style.display === "flex" ? " -" : " +";
+        });
+
+        // Hide the "Data" sub-buttons when the sidebar is collapsed
+        toggleCheckbox.addEventListener("change", function() {
+            if (toggleCheckbox.checked && buttonContainer.style.display === "flex") {
+                buttonContainer.style.display = "none";
+                datatoggleicon.textContent = buttonContainer.style.display === "flex" ? " -" : " +";
+            }
+        });
+
+        function expandSidebarIfCollapsed() {
+            const toggleCheckbox = document.getElementById('toggle');
+            if (toggleCheckbox.checked) {
+                toggleCheckbox.checked = false; // Uncheck to expand the sidebar
+            }
+        }
+
+        // Views button functionality
+        const showViewsButton = document.getElementById("showViewsButton");
+        const viewsButtonContainer = document.getElementById("viewsButtonContainer");
+        const viewstoggleicon = document.getElementById("viewsToggleIcon");
+
+        // Toggle the sub-buttons for "Views"
+        showViewsButton.addEventListener("click", function() {
+            expandSidebarIfCollapsed();
+            viewsButtonContainer.style.display = viewsButtonContainer.style.display === "flex" ? "none" : "flex";
+            viewstoggleicon.textContent = viewsButtonContainer.style.display === "flex" ? " -" : " +";
+        });
+
+        // Hide the "Views" sub-buttons when the sidebar is collapsed
+        toggleCheckbox.addEventListener("change", function() {
+            if (toggleCheckbox.checked && viewsButtonContainer.style.display === "flex") {
+                viewsButtonContainer.style.display = "none";
+                viewstoggleicon.textContent = viewsButtonContainer.style.display === "flex" ? " -" : " +";
+            }
+        });
+
+        // JavaScript to handle the toggle effect for the About button
+        const showAboutButton = document.getElementById("showAboutButton");
+        const aboutContainer = document.getElementById("aboutContainer");
+        const aboutToggleIcon = document.getElementById("aboutToggleIcon");
+
+        // Toggle the sub-buttons for "About"
+        showAboutButton.addEventListener("click", function() {
+            aboutContainer.classList.toggle("active"); // Slide the container (button and text) up or down
+            expandSidebarIfCollapsed();
+            aboutToggleIcon.textContent = aboutContainer.classList.value === "active" ? " ∨" : " ∧";
+        });
+
+        // Hide the "About" sub-buttons when the sidebar is collapsed
+        toggleCheckbox.addEventListener("change", function() {
+            if (toggleCheckbox.checked && aboutContainer.classList.value === "active") {
+                aboutContainer.classList.toggle("active");
+                aboutToggleIcon.textContent = aboutContainer.classList.value === "active" ? " ∨" : " ∧";
+            }
+        });
+
+
+        // Initialize selected options
+        let selectedData = null;
+        let selectedView = null;
+        let lastMapSrc = null; // To store the last map source
+
+        // Get references to the buttons
+        const ticketsButton = document.getElementById('ticketsButton');
+        const towingsButton = document.getElementById('towingsButton');
+        const heatmapButton = document.getElementById('heatmapButton');
+        const plotmapButton = document.getElementById('plotmapButton');
+        const roadmapButton = document.getElementById('roadmapButton');
+
+        // Get references for extras button
+        const extrasButton = document.getElementById('showExtrasButton');
+        const mapContainer = document.getElementById('mapContainer');
+        const backButton = document.getElementById('backButton');
+        
+        // Map container iframe
+        const mapFrame = document.getElementById('mapFrame');
+
+        // Function to update the map source
+        function updateMap() {
+            if (selectedData && selectedView) {
+                let mapSrc = '';
+                
+                if (selectedData === 'tickets' && selectedView === 'heatmap') {
+                    mapSrc = '/maps/tickets_heatmap/';
+                } else if (selectedData === 'tickets' && selectedView === 'plotmap') {
+                    mapSrc = '/maps/tickets_plotmap/';
+                } else if (selectedData === 'tickets' && selectedView === 'roadmap') {
+                    mapSrc = '/maps/tickets_roadmap/';
+                } else if (selectedData === 'towings' && selectedView === 'heatmap') {
+                    mapSrc = '/maps/towings_heatmap/';
+                } else if (selectedData === 'towings' && selectedView === 'plotmap') {
+                    mapSrc = '/maps/towings_plotmap/';
+                } else if (selectedData === 'towings' && selectedView === 'roadmap') {
+                    mapSrc = '/maps/towings_roadmap/';
+                }
+                
+                lastMapSrc = mapSrc;
+                document.getElementById('mapFrame').src = mapSrc;
+                extrasButton.style.backgroundColor = "";
+                backButton.style.display = 'none';
+            }
+        }
+
+        // Event listeners for the buttons
+        ticketsButton.addEventListener('click', function() {
+            selectedData = 'tickets';
+            ticketsButton.style.backgroundColor = "#575757";
+            towingsButton.style.backgroundColor = "";
+            updateMap(); // Update the map after selection
+        });
+
+        towingsButton.addEventListener('click', function() {
+            selectedData = 'towings';
+            towingsButton.style.backgroundColor = "#575757";
+            ticketsButton.style.backgroundColor = "";
+            updateMap(); // Update the map after selection
+        });
+
+        heatmapButton.addEventListener('click', function() {
+            selectedView = 'heatmap';
+            heatmapButton.style.backgroundColor = "#575757";
+            plotmapButton.style.backgroundColor = "";
+            roadmapButton.style.backgroundColor = "";
+            updateMap(); // Update the map after selection
+        });
+
+        plotmapButton.addEventListener('click', function() {
+            selectedView = 'plotmap';
+            plotmapButton.style.backgroundColor = "#575757";
+            heatmapButton.style.backgroundColor = "";
+            roadmapButton.style.backgroundColor = "";
+            updateMap(); // Update the map after selection
+        });
+
+        roadmapButton.addEventListener('click', function() {
+            selectedView = 'roadmap';
+            roadmapButton.style.backgroundColor = "#575757";
+            heatmapButton.style.backgroundColor = "";
+            plotmapButton.style.backgroundColor = "";
+            updateMap(); // Update the map after selection
+        });
+
+        // Function to load extras.html content dynamically
+        extrasButton.addEventListener('click', function() {
+            //lastMapSrc = mapFrame.src; // Save the current map source
+            mapSrc = '/maps/extras/';
+            document.getElementById('mapFrame').src = mapSrc;
+            extrasButton.style.backgroundColor = "#575757";
+            backButton.style.display = 'block'; // Show the Back button
+        });
+
+        // Handle Back button click
+        backButton.addEventListener('click', function() {
+            //mapFrame.src = lastMapSrc; // Go back to the last map
+            backButton.style.display = 'none'; // Hide the Back button
+            extrasButton.style.backgroundColor = "";
+            updateMap();
+        });
+
+        selectedData = 'tickets';
+        ticketsButton.style.backgroundColor = "#575757";
+        selectedView = 'plotmap';
+        plotmapButton.style.backgroundColor = "#575757";
+
+    </script>
+    
+</body>
+</html>

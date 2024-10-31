@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extras - Graphs</title>
+    <!-- Load Plotly.js from CDN -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Basic styling for the graph containers */
+        .graph-container {
+            display: flex;
+            justify-content: space-between;
+        }
+    
+        .bottom-container {
+            display: block;
+        }
+    
+        /* Left column styling */
+        .left-column {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+    
+        /* Each graph in the left column */
+        .left-column > div {
+            height: 325px;
+        }
+    
+        /* Right column styling */
+        .right-column {
+            width: 50%;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+    
+        /* Car graph spans full height of both left column graphs */
+        .right-column > div {
+            height: 690px; /* Adjusted to match the combined height of the left column graphs */
+        }
+    
+        /* Bottom section styling */
+        .bottom-section {
+            height: 330px;
+            width: 100%;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+    
+        /* Page styling */
+        body {
+            margin: 0;
+            padding: 25px;
+            font-family: Arial, sans-serif;
+        }
+    
+        /* Legend styling */
+        .legend { list-style: none; }
+        .legend li { float: left; margin-right: 10px; font-weight: normal; }
+        .legend span { border: 1px solid #ccc; float: left; width: 12px; height: 12px; margin: 2px; }
+        .legend .tickets { background-color: #2f4b7c; }
+        .legend .towings { background-color: #ffa600; }
+    
+         /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .graph-container {
+                flex-direction: column;
+                padding: 0;
+            }
+
+            .left-column, .right-column, .bottom-section {
+                width: 100%;
+                padding: 0px; /* Remove padding on mobile */
+                margin: 0;  /* Remove margin on mobile */
+            }
+
+            .left-column > div, .right-column > div, .bottom-section > div {
+                width: 100%;
+                margin: 0; /* Remove all margins */
+                height: 300px; /* Set a consistent height */
+            }
+
+            /* Reduce gap between stacked graphs */
+            .left-column, .right-column {
+                gap: 0; /* Smaller gap for mobile */
+            }
+
+            /* Additional spacing control if needed */
+            .left-column > div, .right-column > div, .bottom-section > div {
+                padding: 0;
+                margin-bottom: 10px; /* Control space between graphs */
+                margin-top: 10px; /* Control space between graphs */
+            }
+
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between; font-weight: bold; margin-bottom: 20px; margin-top: 15px; margin-left: 80px; margin-right: 5px;">
+    
+        <!-- Centered Header Text -->
+        <div style="flex-grow: 1; text-align: center;">
+            <h2>Extra Ticket and Towing Information</h2>
+        </div>
+        
+        <!-- Right-aligned Content -->
+        <div style="flex-shrink: 0; margin-left: 25px;">
+            <ul class="legend">
+                <div>
+                    <li><span class="tickets"></span> Tickets</li>
+                </div>
+                <div>
+                    <li><span class="towings"></span> Towings</li>
+                </div>
+            </ul>
+        </div>
+        
+    </div>
+    
+    <!-- This is where the graphs will be rendered -->
+    <div class="graph-container">
+        <!-- Left column with three stacked graphs -->
+        <div class="left-column">
+            <div id="plotly-weekgraph"></div> <!-- Graph 1 -->
+            <div id="plotly-monthgraph"></div> <!-- Graph 2 -->
+        </div>
+
+        <!-- Right column with one large graph -->
+        <div class="right-column">
+            <div id="plotly-cargraph"></div> <!-- Graph 4 -->
+        </div>
+        
+    </div>
+
+    <div class="bottom-container">
+        <!-- Bottom section with one large graph -->
+        <div class="bottom-section">
+            <div id="plotly-hourgraph"></div> <!-- Graph 3 -->
+        </div>
+    </div>
+
+    <script>
+        // Get the JSON data passed from the Django view
+        var weekJSON = {{ week_json|safe }};
+        var monthJSON = {{ month_json|safe }};
+        var hourJSON = {{ hour_json|safe }};
+        var carJSON = {{ car_json|safe }};
+        
+        // Logging the data to ensure it’s correct
+        console.log(weekJSON);
+        console.log(monthJSON);
+        console.log(hourJSON);
+        console.log(carJSON);
+
+        // Render the graphs in their container with responsive:true
+        Plotly.newPlot('plotly-weekgraph', weekJSON.data, weekJSON.layout, {responsive: true, displayModeBar: false});
+        Plotly.newPlot('plotly-monthgraph', monthJSON.data, monthJSON.layout, {responsive: true, displayModeBar: false});
+        Plotly.newPlot('plotly-hourgraph', hourJSON.data, hourJSON.layout, {responsive: true, displayModeBar: false});
+        Plotly.newPlot('plotly-cargraph', carJSON.data, carJSON.layout, {responsive: true, displayModeBar: false});
+
+    </script>
+</body>
+</html>
