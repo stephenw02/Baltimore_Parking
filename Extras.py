@@ -133,6 +133,8 @@ fig = px.bar(day_counts, x='Day', y='Percent', color='Data',
 fig.layout.xaxis.fixedrange = True
 fig.layout.yaxis.fixedrange = True
 
+fig.update_layout(dragmode=False)
+
 fig.update_layout(yaxis_title=None)
 fig.update_layout(xaxis_title=None)
 fig.update_layout(title='By Day')
@@ -199,6 +201,8 @@ fig = px.bar(month_counts, x='Month', y='Percent', color='Data',
 # Remove zooming ability
 fig.layout.xaxis.fixedrange = True
 fig.layout.yaxis.fixedrange = True
+
+fig.update_layout(dragmode=False)
 
 fig.update_layout(yaxis_title=None)
 fig.update_layout(xaxis_title=None)
@@ -271,6 +275,8 @@ fig = px.scatter(hour_counts, x='Time', y='Percent', color='Data',
 # Remove zooming ability
 fig.layout.xaxis.fixedrange = True
 fig.layout.yaxis.fixedrange = True
+
+fig.update_layout(dragmode=False)
 
 fig.update_layout(yaxis_title=None)
 fig.update_layout(xaxis_title=None)
@@ -371,6 +377,8 @@ fig.update_layout(
 # Remove zooming ability
 fig.layout.xaxis.fixedrange = True
 fig.layout.yaxis.fixedrange = True
+
+fig.update_layout(dragmode=False)
 
 fig.update_layout(yaxis_title=None)
 fig.update_layout(xaxis_title=None)

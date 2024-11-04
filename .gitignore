@@ -1,6 +1,5 @@
 baltparkweb/.env
 mydatabase
 db.sqlite3
-baltparkweb/__pycache__
-__pycache__/
-maps/migrations
+**/__pycache__/
+**/migrations/
